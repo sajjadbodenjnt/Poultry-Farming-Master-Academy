@@ -42,7 +42,7 @@ class MainActivity : Activity() {
         content.addView(label("বাংলাদেশের খামারিদের জন্য বাংলা প্রশিক্ষণ", 14f, Color.DKGRAY))
         search = EditText(this).apply {
             hint = "পাঠ বা বিষয় খুঁজুন"
-            singleLine = true
+            setSingleLine(true)
             setPadding(14, 8, 14, 8)
         }
         content.addView(search)
@@ -102,7 +102,7 @@ class MainActivity : Activity() {
     private fun decimalField(hintText: String) = EditText(this).apply {
         hint = hintText
         inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
-        singleLine = true
+        setSingleLine(true)
     }
 
     private fun profitCalculator() {
