@@ -9,6 +9,9 @@ import android.view.ViewGroup
 import android.widget.*
 import android.text.Editable
 import android.text.TextWatcher
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class MainActivity : Activity() {
     private val green = Color.rgb(23, 77, 50)
@@ -51,6 +54,8 @@ class MainActivity : Activity() {
         content.addView(label("খামার ব্যবস্থাপনা টুল", 21f, green, true))
         content.addView(actionButton("📊  দেশি মুরগির লাভ-ক্ষতি ক্যালকুলেটর") { profitCalculator() })
         content.addView(actionButton("🌾  খাবার হিসাব ক্যালকুলেটর") { feedCalculator() })
+        content.addView(actionButton("🥚  ডিম উৎপাদনের হার") { eggProductionCalculator() })
+        content.addView(actionButton("🐣  ডিম ফোটার সম্ভাব্য তারিখ") { incubationCalculator() })
         content.addView(actionButton("📔  দৈনিক দেশি মুরগির ডায়েরি") { diary() })
         content.addView(actionButton("ℹ️  অ্যাপ সম্পর্কে") { about() })
         content.addView(label("স্বাস্থ্য সতর্কতা: রোগ নির্ণয়, ওষুধ ও টিকার সিদ্ধান্তে উপজেলা প্রাণিসম্পদ কর্মকর্তা বা নিবন্ধিত পশুচিকিৎসকের পরামর্শ নিন।", 13f, Color.rgb(130, 58, 35)))
@@ -142,6 +147,44 @@ class MainActivity : Activity() {
             }.setNegativeButton("বন্ধ", null).show()
     }
 
+    private fun eggProductionCalculator() {
+        val fields = listOf(decimalField("আজকের জীবিত ডিমপাড়া মুরগির সংখ্যা"), decimalField("আজ সংগ্রহ করা মোট ডিম"))
+        val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(24, 8, 24, 0) }
+        fields.forEach { box.addView(it) }
+        AlertDialog.Builder(this).setTitle("ডিম উৎপাদনের হার").setView(box)
+            .setPositiveButton("হিসাব") { _, _ ->
+                val birds = fields[0].text.toString().toDoubleOrNull() ?: 0.0
+                val eggs = fields[1].text.toString().toDoubleOrNull() ?: 0.0
+                val rate = if (birds > 0) eggs / birds * 100.0 else 0.0
+                AlertDialog.Builder(this).setTitle("আজকের উৎপাদন")
+                    .setMessage("ডিম উৎপাদনের হার: " + "%.1f".format(rate) + "%\\nএটি দৈনিক হিসাব; পাখির সংখ্যা ও ডিমের তথ্য সঠিকভাবে লিখুন।")
+                    .setPositiveButton("ঠিক আছে", null).show()
+            }.setNegativeButton("বন্ধ", null).show()
+    }
+
+    private fun incubationCalculator() {
+        val input = EditText(this).apply {
+            hint = "ডিম তা দেওয়ার তারিখ লিখুন: YYYY-MM-DD"
+            setSingleLine(true)
+        }
+        AlertDialog.Builder(this).setTitle("মুরগির ডিম ফোটার তারিখ").setMessage("সাধারণত মুরগির ডিমে তা দেওয়ার পর প্রায় ২১ দিন লাগে। তারিখটি YYYY-MM-DD আকারে লিখুন।")
+            .setView(input)
+            .setPositiveButton("তারিখ হিসাব") { _, _ ->
+                try {
+                    val format = SimpleDateFormat("yyyy-MM-dd", Locale.US).apply { isLenient = false }
+                    val start = format.parse(input.text.toString().trim())
+                    if (start == null) throw IllegalArgumentException("date")
+                    val calendar = Calendar.getInstance().apply { time = start; add(Calendar.DAY_OF_YEAR, 21) }
+                    val result = format.format(calendar.time)
+                    AlertDialog.Builder(this).setTitle("সম্ভাব্য ফোটার তারিখ")
+                        .setMessage(result + "\\nবাস্তব সময় তাপমাত্রা, আর্দ্রতা, ডিমের মান ও ইনকিউবেশনের পদ্ধতিতে বদলাতে পারে।")
+                        .setPositiveButton("ঠিক আছে", null).show()
+                } catch (_: Exception) {
+                    Toast.makeText(this, "সঠিক তারিখ দিন: YYYY-MM-DD", Toast.LENGTH_LONG).show()
+                }
+            }.setNegativeButton("বন্ধ", null).show()
+    }
+
     private fun diary() {
         val input = EditText(this).apply {
             hint = "আজকের খাবার, পানি, ডিম, ওজন, অসুস্থতা বা মৃত্যুর তথ্য লিখুন"
@@ -157,7 +200,7 @@ class MainActivity : Activity() {
 
     private fun about() {
         AlertDialog.Builder(this).setTitle("দেশি মুরগি পালন মাস্টার একাডেমি")
-            .setMessage("দেশি মুরগির জাত নির্বাচন, ঘর, বাচ্চা, খাদ্য, ডিম, প্রজনন, স্বাস্থ্য ও ব্যবসা নিয়ে অফলাইন বাংলা প্রশিক্ষণ অ্যাপ।\n\nএতে ৮টি প্রশিক্ষণ বিভাগ, পাঠ অনুসন্ধান, খাদ্য ও লাভের হিসাব এবং ফোনে সংরক্ষিত ডায়েরি রয়েছে।")
+            .setMessage("দেশি মুরগির জাত নির্বাচন, ঘর, বাচ্চা, খাদ্য, ডিম, প্রজনন, স্বাস্থ্য ও ব্যবসা নিয়ে অফলাইন বাংলা প্রশিক্ষণ অ্যাপ।\n\nএতে প্রশিক্ষণ পাঠ, অনুসন্ধান, খাদ্য ও লাভের হিসাব, ডিম উৎপাদনের হার, ডিম ফোটার তারিখ এবং ফোনে সংরক্ষিত ডায়েরি রয়েছে।")
             .setPositiveButton("ঠিক আছে", null).show()
     }
 }
