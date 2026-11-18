@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Build a 60-second Bengali poultry-farm video from openly licensed Wikimedia Commons clips."""
-import os, re, subprocess, textwrap, requests
+import os, re, subprocess, textwrap, requests, time
 from pathlib import Path
 from gtts import gTTS
 from PIL import Image, ImageDraw, ImageFont
@@ -51,8 +51,19 @@ local = []
 credits = ["ভিডিওর দৃশ্য: Wikimedia Commons (প্রতিটি ফাইলের লাইসেন্স ও লেখক নিচে দেওয়া হলো)."]
 for i,(url,title,license_name,artist) in enumerate(clips):
     path = WORK / f"clip_{i}.mp4"
-    response = requests.get(url, headers=HEADERS, timeout=120, stream=True)
-    response.raise_for_status()
+    # Strip tracking parameters and skip temporarily rate-limited files rather than aborting.
+    clean_url = url.split("?")[0]
+    response = None
+    for attempt in range(4):
+        response = requests.get(clean_url, headers=HEADERS, timeout=120, stream=True)
+        if response.status_code == 200:
+            break
+        if response.status_code not in (429, 500, 502, 503, 504):
+            response.raise_for_status()
+        time.sleep(3 * (attempt + 1))
+    if response is None or response.status_code != 200:
+        print(f"Skipping temporarily unavailable Commons clip: {title} ({response.status_code if response else 'no response'})")
+        continue
     with path.open("wb") as f:
         for chunk in response.iter_content(1024*1024):
             if chunk: f.write(chunk)
