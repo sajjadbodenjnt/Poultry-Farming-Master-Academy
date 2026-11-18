@@ -135,3 +135,5 @@ cmd += ["-i",str(tts),"-filter_complex",
 run(cmd)
 print("Created:", OUT/"poultry-farm-bengali-60s.mp4")
 print("Real source clips:", len(local))
+
+# Workflow trigger verification: video render is performed by GitHub Actions.
