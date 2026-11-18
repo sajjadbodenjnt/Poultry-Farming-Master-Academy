@@ -1,5 +1,10 @@
 name: Create 1-minute poultry farm video
 on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "scripts/create_poultry_video.py"
+      - ".github/workflows/poultry-video.yml"
   workflow_dispatch:
 permissions:
   contents: read
