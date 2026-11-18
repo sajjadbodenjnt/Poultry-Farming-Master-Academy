@@ -5,7 +5,6 @@ import android.app.AlertDialog
 import android.os.Bundle
 import android.graphics.Color
 import android.graphics.Typeface
-import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.*
 import android.text.Editable
@@ -16,7 +15,7 @@ class MainActivity : Activity() {
     private val pale = Color.rgb(244, 247, 241)
     private lateinit var list: LinearLayout
     private lateinit var search: EditText
-    private val prefs by lazy { getSharedPreferences("poultry_diary", MODE_PRIVATE) }
+    private val prefs by lazy { getSharedPreferences("deshi_chicken_diary", MODE_PRIVATE) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,29 +31,29 @@ class MainActivity : Activity() {
             setPadding(18, 18, 18, 24)
         }
         val hero = TextView(this).apply {
-            text = "🐔  Poultry Farming\n      Master Academy"
+            text = "🐓  দেশি মুরগি পালন\n      মাস্টার একাডেমি"
             textSize = 25f
             setTextColor(green)
             typeface = Typeface.DEFAULT_BOLD
             setPadding(4, 10, 4, 4)
         }
         content.addView(hero)
-        content.addView(label("বাংলাদেশের খামারিদের জন্য বাংলা প্রশিক্ষণ", 14f, Color.DKGRAY))
+        content.addView(label("বাংলাদেশের দেশি মুরগি খামারিদের জন্য অফলাইন বাংলা গাইড", 14f, Color.DKGRAY))
         search = EditText(this).apply {
-            hint = "পাঠ বা বিষয় খুঁজুন"
+            hint = "দেশি মুরগির পাঠ বা বিষয় খুঁজুন"
             setSingleLine(true)
             setPadding(14, 8, 14, 8)
         }
         content.addView(search)
-        content.addView(label("প্রশিক্ষণ কোর্স", 21f, green, true))
+        content.addView(label("দেশি মুরগি পালন প্রশিক্ষণ", 21f, green, true))
         list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         content.addView(list)
         content.addView(label("খামার ব্যবস্থাপনা টুল", 21f, green, true))
-        content.addView(actionButton("📊  লাভ-ক্ষতি ক্যালকুলেটর") { profitCalculator() })
-        content.addView(actionButton("🌽  খাদ্য হিসাব ক্যালকুলেটর") { feedCalculator() })
-        content.addView(actionButton("📔  দৈনিক খামার ডায়েরি") { diary() })
+        content.addView(actionButton("📊  দেশি মুরগির লাভ-ক্ষতি ক্যালকুলেটর") { profitCalculator() })
+        content.addView(actionButton("🌾  খাবার হিসাব ক্যালকুলেটর") { feedCalculator() })
+        content.addView(actionButton("📔  দৈনিক দেশি মুরগির ডায়েরি") { diary() })
         content.addView(actionButton("ℹ️  অ্যাপ সম্পর্কে") { about() })
-        content.addView(label("স্বাস্থ্য সতর্কতা: রোগ নির্ণয়, ওষুধ ও টিকার সিদ্ধান্তে নিবন্ধিত পশুচিকিৎসকের পরামর্শ নিন।", 13f, Color.rgb(130, 58, 35)))
+        content.addView(label("স্বাস্থ্য সতর্কতা: রোগ নির্ণয়, ওষুধ ও টিকার সিদ্ধান্তে উপজেলা প্রাণিসম্পদ কর্মকর্তা বা নিবন্ধিত পশুচিকিৎসকের পরামর্শ নিন।", 13f, Color.rgb(130, 58, 35)))
         scroll.addView(content)
         root.addView(scroll, LinearLayout.LayoutParams(-1, 0, 1f))
         setContentView(root)
@@ -82,7 +81,7 @@ class MainActivity : Activity() {
 
     private fun renderCourses(query: String = "") {
         list.removeAllViews()
-        CourseData.courses.forEach { course ->
+        DeshiChickenData.courses.forEach { course ->
             val matches = course.lessons.filter {
                 query.isBlank() || it.title.contains(query, true) || it.body.contains(query, true) || course.title.contains(query, true)
             }
@@ -114,7 +113,7 @@ class MainActivity : Activity() {
         )
         val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(24, 8, 24, 0) }
         fields.forEach { box.addView(it) }
-        AlertDialog.Builder(this).setTitle("লাভ-ক্ষতি হিসাব").setView(box)
+        AlertDialog.Builder(this).setTitle("দেশি মুরগির লাভ-ক্ষতি").setView(box)
             .setPositiveButton("হিসাব") { _, _ ->
                 val count = fields[0].text.toString().toDoubleOrNull() ?: 0.0
                 val weight = fields[1].text.toString().toDoubleOrNull() ?: 0.0
@@ -132,13 +131,13 @@ class MainActivity : Activity() {
         val fields = listOf(decimalField("মুরগির সংখ্যা"), decimalField("প্রতি মুরগির দৈনিক খাবার (গ্রাম)"), decimalField("কত দিনের খাবার"))
         val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(24, 8, 24, 0) }
         fields.forEach { box.addView(it) }
-        AlertDialog.Builder(this).setTitle("খাদ্য হিসাব").setView(box)
+        AlertDialog.Builder(this).setTitle("খাবারের পরিমাণ হিসাব").setView(box)
             .setPositiveButton("হিসাব") { _, _ ->
                 val totalKg = (fields[0].text.toString().toDoubleOrNull() ?: 0.0) *
                     (fields[1].text.toString().toDoubleOrNull() ?: 0.0) *
                     (fields[2].text.toString().toDoubleOrNull() ?: 0.0) / 1000.0
                 AlertDialog.Builder(this).setTitle("প্রয়োজনীয় খাবার")
-                    .setMessage("মোট আনুমানিক খাবার: " + "%.2f".format(totalKg) + " কেজি\nবাস্তব চাহিদা জাত, বয়স ও উৎপাদন পর্যায় অনুযায়ী বদলায়।")
+                    .setMessage("মোট আনুমানিক খাবার: " + "%.2f".format(totalKg) + " কেজি\nবাস্তব চাহিদা বয়স, জাত ও বিচরণের খাবার অনুযায়ী বদলায়।")
                     .setPositiveButton("ঠিক আছে", null).show()
             }.setNegativeButton("বন্ধ", null).show()
     }
@@ -149,7 +148,7 @@ class MainActivity : Activity() {
             minLines = 5
             setText(prefs.getString("entry", ""))
         }
-        AlertDialog.Builder(this).setTitle("দৈনিক খামার ডায়েরি").setView(input)
+        AlertDialog.Builder(this).setTitle("দৈনিক দেশি মুরগির ডায়েরি").setView(input)
             .setPositiveButton("সংরক্ষণ") { _, _ ->
                 prefs.edit().putString("entry", input.text.toString()).apply()
                 Toast.makeText(this, "ডায়েরি ফোনে সংরক্ষিত হয়েছে", Toast.LENGTH_SHORT).show()
@@ -157,8 +156,8 @@ class MainActivity : Activity() {
     }
 
     private fun about() {
-        AlertDialog.Builder(this).setTitle("Poultry Farming Master Academy")
-            .setMessage("বাংলাদেশের ব্রয়লার, লেয়ার, সোনালি ও দেশি মুরগির খামারিদের জন্য অফলাইন বাংলা শেখার অ্যাপ।\n\nএই সংস্করণে ১০টি কোর্স বিভাগ, পাঠ অনুসন্ধান, খাদ্য ও লাভের হিসাব এবং স্থানীয় ডায়েরি রয়েছে।")
+        AlertDialog.Builder(this).setTitle("দেশি মুরগি পালন মাস্টার একাডেমি")
+            .setMessage("দেশি মুরগির জাত নির্বাচন, ঘর, বাচ্চা, খাদ্য, ডিম, প্রজনন, স্বাস্থ্য ও ব্যবসা নিয়ে অফলাইন বাংলা প্রশিক্ষণ অ্যাপ।\n\nএতে ৮টি প্রশিক্ষণ বিভাগ, পাঠ অনুসন্ধান, খাদ্য ও লাভের হিসাব এবং ফোনে সংরক্ষিত ডায়েরি রয়েছে।")
             .setPositiveButton("ঠিক আছে", null).show()
     }
 }
